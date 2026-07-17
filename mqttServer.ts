@@ -1,7 +1,7 @@
 import mqtt from "mqtt";
 
-const PUB_TOPIC = "873/sub";
-const SUB_TOPIC = "873/pub";
+const PUB_TOPIC = "21781/sub";
+const SUB_TOPIC = "21781/pub";
 
 const client = mqtt.connect("mqtt://localhost:1883");
 
