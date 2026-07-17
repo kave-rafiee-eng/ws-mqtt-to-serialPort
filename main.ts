@@ -27,10 +27,10 @@ SerialPort.list().then((ports) => {
   console.log(ports);
 
   ports.forEach((p) => {
-    if (p.manufacturer === "FTDI") {
+    if (p.serialNumber === "6&2E9A18CE&0&3") {
       port = new SerialPort({
         path: p.path,
-        baudRate: 115200,
+        baudRate: 38400,
       });
 
       port.on("open", () => console.log("Serial port opened"));
