@@ -3,7 +3,7 @@ import mqtt from "mqtt";
 const PUB_TOPIC = "21781/sub";
 const SUB_TOPIC = "21781/pub";
 
-const client = mqtt.connect("mqtt://localhost:1883");
+const client = mqtt.connect("mqtt://109.125.149.108:1883");
 
 type MessageCallback = (message: Buffer) => void;
 

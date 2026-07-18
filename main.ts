@@ -27,7 +27,7 @@ SerialPort.list().then((ports) => {
   console.log(ports);
 
   ports.forEach((p) => {
-    if (p.serialNumber === "6&2E9A18CE&0&3") {
+    if (p.productId === "7523") {
       port = new SerialPort({
         path: p.path,
         baudRate: 38400,
