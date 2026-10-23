@@ -10,6 +10,7 @@ export enum PcgPort {
   DIP = 0,
   RTR = 1,
   FWU = 2,
+  MODBUS = 3,
 }
 
 export const PcgSize = {

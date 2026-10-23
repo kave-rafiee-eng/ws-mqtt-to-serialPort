@@ -58,7 +58,7 @@ export class PcgRouter {
       return;
     }
 
-    const topic = mqttPubTopic(this.deviceSerial, pcg.receiverType);
+    const topic = mqttPubTopic(pcg.receiverType, this.deviceSerial);
     if (topic !== null) {
       console.log(`[ROUTER] serial → MQTT topic=${topic}`);
       this.mqtt.write(raw, topic);
