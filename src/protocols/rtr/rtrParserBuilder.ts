@@ -1,6 +1,6 @@
 /**
  * RTR — payload inside a PCG frame (port RTR).
- * Header: pid, mode, register count.
+ * Header: mode, register count.
  * READ registers are address only (2 bytes). WRITE registers are address + value (4 bytes).
  * Multi-byte fields are big-endian. Advance answers both modes with a WRITE payload.
  */
@@ -40,7 +40,6 @@ export class Rtr {
       };
     }
 
-    const pid = data[RtrOffset.PID];
     const mode = data[RtrOffset.MODE];
     const numOfRegisters = data[RtrOffset.NUM_OF_REGISTERS];
 
@@ -66,7 +65,7 @@ export class Rtr {
         registers.push({ address: readU16BE(data, offset) });
       }
 
-      return { ok: true, rtr: { pid, mode: RtrMode.READ, registers } };
+      return { ok: true, rtr: { mode: RtrMode.READ, registers } };
     }
 
     if (mode === RtrMode.WRITE) {
@@ -94,7 +93,7 @@ export class Rtr {
         });
       }
 
-      return { ok: true, rtr: { pid, mode: RtrMode.WRITE, registers } };
+      return { ok: true, rtr: { mode: RtrMode.WRITE, registers } };
     }
 
     return {
@@ -120,7 +119,6 @@ export class Rtr {
       const out = new Uint8Array(
         RtrSize.HEADER + count * RtrSize.REGISTER_READ,
       );
-      out[RtrOffset.PID] = rtr.pid;
       out[RtrOffset.MODE] = RtrMode.READ;
       out[RtrOffset.NUM_OF_REGISTERS] = count;
       for (let i = 0; i < count; i++) {
@@ -136,7 +134,6 @@ export class Rtr {
     const out = new Uint8Array(
       RtrSize.HEADER + count * RtrSize.REGISTER_WRITE,
     );
-    out[RtrOffset.PID] = rtr.pid;
     out[RtrOffset.MODE] = RtrMode.WRITE;
     out[RtrOffset.NUM_OF_REGISTERS] = count;
     for (let i = 0; i < count; i++) {

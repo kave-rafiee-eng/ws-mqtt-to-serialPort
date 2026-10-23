@@ -15,15 +15,16 @@ export enum PcgPort {
 
 export const PcgSize = {
   CRC: 2,
-  HEADER: 5,
+  HEADER: 6,
 } as const;
 
 export const PcgOffset = {
-  SENDER_TYPE: 0,
-  SENDER_SERIAL_LOW: 1,
-  SENDER_SERIAL_HIGH: 2,
-  RECEIVER_TYPE: 3,
-  RECEIVER_PORT: 4,
+  PID: 0,
+  SENDER_TYPE: 1,
+  SENDER_SERIAL_LOW: 2,
+  SENDER_SERIAL_HIGH: 3,
+  RECEIVER_TYPE: 4,
+  RECEIVER_PORT: 5,
 } as const;
 
 export const MIN_PACKET_SIZE = PcgSize.CRC + PcgSize.HEADER;

@@ -16,8 +16,8 @@ export type RtrWriteRegister = {
  * Device responses always use WRITE, including replies to a READ.
  */
 export type ParsedRtr =
-  | { pid: number; mode: RtrMode.READ; registers: RtrReadRegister[] }
-  | { pid: number; mode: RtrMode.WRITE; registers: RtrWriteRegister[] };
+  | { mode: RtrMode.READ; registers: RtrReadRegister[] }
+  | { mode: RtrMode.WRITE; registers: RtrWriteRegister[] };
 
 export type RtrParseErrorReason =
   | "TOO_SHORT"

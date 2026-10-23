@@ -8,7 +8,7 @@ import type { SerialTransport } from "../transport/serial-transport.ts";
 export const DEVICE_SERIAL_REGISTER = 10100;
 
 /**
- * Send RTR READ for device serial and wait for a WRITE reply with the same PID.
+ * Send RTR READ for device serial and wait for a WRITE reply with the same PCG PID.
  * Resends until a valid response arrives (same idea as ESP32 rtrReadRegister(..., 0)).
  */
 export function readDeviceSerial(
@@ -20,12 +20,12 @@ export function readDeviceSerial(
   const pid = Math.floor(Math.random() * 256);
 
   const request = pcg.build(
+    pid,
     PcgSenderType.ESP32,
     0,
     PcgSenderType.ADVANCE,
     PcgPort.RTR,
     rtr.build({
-      pid,
       mode: RtrMode.READ,
       registers: [{ address: DEVICE_SERIAL_REGISTER }],
     }),
@@ -37,13 +37,13 @@ export function readDeviceSerial(
     const tryParse = (data: Uint8Array): void => {
       const pcgResult = pcg.parse(data);
       if (!pcgResult.ok) return;
+      if (pcgResult.pcg.pid !== pid) return;
       if (pcgResult.pcg.receiverPort !== PcgPort.RTR) return;
       if (pcgResult.pcg.senderType !== PcgSenderType.ADVANCE) return;
 
       const rtrResult = rtr.parse(pcgResult.pcg.payload);
       if (!rtrResult.ok) return;
       if (rtrResult.rtr.mode !== RtrMode.WRITE) return;
-      if (rtrResult.rtr.pid !== pid) return;
 
       const reg = rtrResult.rtr.registers.find(
         (r) => r.address === DEVICE_SERIAL_REGISTER,

@@ -3,6 +3,7 @@
 import { PcgPort, PcgSenderType } from "./constants.ts";
 
 export type ParsedPcg = {
+  pid: number;
   senderType: PcgSenderType;
   senderSerialLow: number;
   senderSerialHigh: number;

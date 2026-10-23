@@ -2,18 +2,18 @@ import type { FwuMode } from "./constants.ts";
 
 /**
  * FWU payload (PCG payload when port is FWU). No CRC here; CRC belongs to PCG.
- * Address is 16 bytes on the wire. Data is a fixed 256-byte firmware block.
+ * Correlation uses PCG pid. Address is 16 bytes on the wire.
+ * Data is a fixed 256-byte firmware block.
  * Device replies: WRITE (data) for READ, ACK for WRITE.
  */
 export type ParsedFwu =
-  | { pid: number; mode: FwuMode.READ; address: Uint8Array }
+  | { mode: FwuMode.READ; address: Uint8Array }
   | {
-      pid: number;
       mode: FwuMode.WRITE;
       address: Uint8Array;
       data: Uint8Array;
     }
-  | { pid: number; mode: FwuMode.ACK; address: Uint8Array };
+  | { mode: FwuMode.ACK; address: Uint8Array };
 
 export type FwuParseErrorReason =
   | "TOO_SHORT"

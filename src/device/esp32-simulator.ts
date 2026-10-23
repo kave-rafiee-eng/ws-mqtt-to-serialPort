@@ -71,10 +71,9 @@ export class Esp32Simulator {
     if (fwu.mode === FwuMode.WRITE) {
       this.memory.set(key, new Uint8Array(fwu.data));
       console.log(
-        `[ESP32-SIM] FWU WRITE pid=${fwu.pid} addr=${key} bytes=${fwu.data.length}`,
+        `[ESP32-SIM] FWU WRITE pid=${request.pid} addr=${key} bytes=${fwu.data.length}`,
       );
       const ack = this.fwu.build({
-        pid: fwu.pid,
         mode: FwuMode.ACK,
         address: fwu.address,
       });
@@ -86,10 +85,9 @@ export class Esp32Simulator {
       const stored = this.memory.get(key);
       const data = stored ?? new Uint8Array(FwuSize.DATA);
       console.log(
-        `[ESP32-SIM] FWU READ pid=${fwu.pid} addr=${key} hit=${stored !== undefined}`,
+        `[ESP32-SIM] FWU READ pid=${request.pid} addr=${key} hit=${stored !== undefined}`,
       );
       const replyPayload = this.fwu.build({
-        pid: fwu.pid,
         mode: FwuMode.WRITE,
         address: fwu.address,
         data,
@@ -104,6 +102,7 @@ export class Esp32Simulator {
   /** Swap sender/receiver and send back on the same transport the request used. */
   private reply(request: ParsedPcg, fwuPayload: Uint8Array): void {
     const frame = this.pcg.build(
+      request.pid,
       PcgSenderType.ESP32,
       0,
       request.senderType,

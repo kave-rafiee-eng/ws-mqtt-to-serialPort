@@ -1,7 +1,8 @@
 /**
  * FWU — payload inside a PCG frame (port FWU). Firmware update blocks.
- * Header: pid, mode. Then 16-byte address; WRITE also carries 256-byte data.
+ * Header: mode. Then 16-byte address; WRITE also carries 256-byte data.
  * Device replies: WRITE (data) for READ, ACK for WRITE.
+ * Packet correlation uses PCG pid (not present in this payload).
  */
 import {
   FwuMode,
@@ -27,7 +28,6 @@ export class Fwu {
       };
     }
 
-    const pid = data[FwuOffset.PID];
     const mode = data[FwuOffset.MODE];
     const address = data.slice(
       FwuOffset.ADDRESS,
@@ -46,7 +46,7 @@ export class Fwu {
           },
         };
       }
-      return { ok: true, fwu: { pid, mode: FwuMode.READ, address } };
+      return { ok: true, fwu: { mode: FwuMode.READ, address } };
     }
 
     if (mode === FwuMode.ACK) {
@@ -61,7 +61,7 @@ export class Fwu {
           },
         };
       }
-      return { ok: true, fwu: { pid, mode: FwuMode.ACK, address } };
+      return { ok: true, fwu: { mode: FwuMode.ACK, address } };
     }
 
     if (mode === FwuMode.WRITE) {
@@ -82,7 +82,7 @@ export class Fwu {
       );
       return {
         ok: true,
-        fwu: { pid, mode: FwuMode.WRITE, address, data: block },
+        fwu: { mode: FwuMode.WRITE, address, data: block },
       };
     }
 
@@ -107,7 +107,6 @@ export class Fwu {
       const out = new Uint8Array(
         fwu.mode === FwuMode.ACK ? PACKET_SIZE_ACK : PACKET_SIZE_READ,
       );
-      out[FwuOffset.PID] = fwu.pid;
       out[FwuOffset.MODE] = fwu.mode;
       out.set(fwu.address, FwuOffset.ADDRESS);
       return out;
@@ -120,7 +119,6 @@ export class Fwu {
     }
 
     const out = new Uint8Array(PACKET_SIZE_WRITE);
-    out[FwuOffset.PID] = fwu.pid;
     out[FwuOffset.MODE] = FwuMode.WRITE;
     out.set(fwu.address, FwuOffset.ADDRESS);
     out.set(fwu.data, FwuOffset.DATA);

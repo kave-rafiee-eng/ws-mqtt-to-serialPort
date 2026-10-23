@@ -1,5 +1,5 @@
 /**
- * PCG — layer 1 - header (sender type/serial, receiver type/port) + payload + CRC16 Modbus LE.
+ * PCG — layer 1 - header (pid, sender type/serial, receiver type/port) + payload + CRC16 Modbus LE.
  */
 import { MIN_PACKET_SIZE, PcgOffset, PcgSize } from "./constants.ts";
 import { modbusCrc16 } from "./crc.ts";
@@ -36,6 +36,7 @@ export class Pcg {
     }
 
     const pcg: ParsedPcg = {
+      pid: data[PcgOffset.PID],
       senderType: data[PcgOffset.SENDER_TYPE],
       senderSerialLow: data[PcgOffset.SENDER_SERIAL_LOW],
       senderSerialHigh: data[PcgOffset.SENDER_SERIAL_HIGH],
@@ -48,6 +49,7 @@ export class Pcg {
   }
 
   build(
+    pid: number,
     senderType: number,
     senderSerial: number,
     receiverType: number,
@@ -56,6 +58,7 @@ export class Pcg {
   ): Uint8Array {
     const bodyLen = PcgSize.HEADER + payload.length;
     const out = new Uint8Array(bodyLen + PcgSize.CRC);
+    out[PcgOffset.PID] = pid;
     out[PcgOffset.SENDER_TYPE] = senderType;
     out[PcgOffset.SENDER_SERIAL_LOW] = senderSerial & 0xff;
     out[PcgOffset.SENDER_SERIAL_HIGH] = (senderSerial >> 8) & 0xff;

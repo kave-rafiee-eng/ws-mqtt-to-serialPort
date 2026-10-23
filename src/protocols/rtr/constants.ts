@@ -5,15 +5,14 @@ export enum RtrMode {
 }
 
 export const RtrSize = {
-  HEADER: 3,
+  HEADER: 2,
   REGISTER_READ: 2,
   REGISTER_WRITE: 4,
 } as const;
 
 export const RtrOffset = {
-  PID: 0,
-  MODE: 1,
-  NUM_OF_REGISTERS: 2,
+  MODE: 0,
+  NUM_OF_REGISTERS: 1,
 } as const;
 
 export const MIN_PACKET_SIZE = RtrSize.HEADER;
