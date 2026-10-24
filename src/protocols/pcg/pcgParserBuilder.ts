@@ -72,4 +72,37 @@ export class Pcg {
 
     return out;
   }
+
+  /**
+   * Split a serial chunk that may contain multiple back-to-back PCG frames.
+   * Takes the shortest CRC-valid frame at each offset (idle gaps are not reliable).
+   */
+  splitFrames(data: Uint8Array): Uint8Array[] {
+    const frames: Uint8Array[] = [];
+    let offset = 0;
+
+    while (offset + MIN_PACKET_SIZE <= data.length) {
+      let found = false;
+
+      for (let end = offset + MIN_PACKET_SIZE; end <= data.length; end++) {
+        const slice = data.subarray(offset, end);
+        const body = slice.subarray(0, slice.length - PcgSize.CRC);
+        const receivedCrc =
+          slice[slice.length - 2] | (slice[slice.length - 1] << 8);
+
+        if (modbusCrc16(body) === receivedCrc) {
+          frames.push(data.slice(offset, end));
+          offset = end;
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        offset += 1;
+      }
+    }
+
+    return frames;
+  }
 }

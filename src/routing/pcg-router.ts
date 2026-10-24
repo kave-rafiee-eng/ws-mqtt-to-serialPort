@@ -40,9 +40,28 @@ export class PcgRouter {
   ) {}
 
   handleFromSerial(raw: Uint8Array): void {
+    const frames = this.pcg.splitFrames(raw);
+    if (frames.length === 0) {
+      const parsed = this.pcg.parse(raw);
+      console.log("[ROUTER] serial parse failed:", parsed.ok ? "unknown" : parsed.error);
+      console.log(raw);
+      return;
+    }
+
+    if (frames.length > 1) {
+      console.log(`[ROUTER] serial split ${frames.length} frames from ${raw.length} bytes`);
+    }
+
+    for (const frame of frames) {
+      this.dispatchFromSerial(frame);
+    }
+  }
+
+  private dispatchFromSerial(raw: Uint8Array): void {
     const parsed = this.pcg.parse(raw);
     if (!parsed.ok) {
       console.log("[ROUTER] serial parse failed:", parsed.error);
+      console.log(raw);
       return;
     }
 
@@ -58,7 +77,7 @@ export class PcgRouter {
       return;
     }
 
-    const topic = mqttPubTopic(pcg.receiverType, this.deviceSerial);
+    const topic = mqttPubTopic(this.deviceSerial, pcg.receiverType);
     if (topic !== null) {
       console.log(`[ROUTER] serial → MQTT topic=${topic}`);
       this.mqtt.write(raw, topic);

@@ -52,14 +52,13 @@ export class SerialTransport implements Transport {
 
     while (!this.port?.isOpen) {
       const ports = await SerialPort.list();
+      //console.log(ports);
       const match = ports.find(
         (p) => normalizeProductId(p.productId) === wanted,
       );
 
       if (!match) {
-        console.log(
-          `Waiting for USB serial (productId=${this.productId})...`,
-        );
+        console.log(`Waiting for USB serial (productId=${this.productId})...`);
         await delay(this.pollIntervalMs);
         continue;
       }
