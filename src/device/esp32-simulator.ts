@@ -1,3 +1,5 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { DipCommand } from "../protocols/dip/constants.ts";
 import { Dip } from "../protocols/dip/dipParserBuilder.ts";
 import { FwuMode, FwuSize } from "../protocols/fwu/constants.ts";
@@ -34,6 +36,7 @@ export class Esp32Simulator {
   private readonly pcg = new Pcg();
   /** Virtual flash: hex(address) → 256-byte block */
   private readonly memory = new Map<string, Uint8Array>();
+  private readonly memoryFilePath: string;
   private handling = false;
 
   constructor(
@@ -42,7 +45,14 @@ export class Esp32Simulator {
     private readonly mqtt: MqttTransport,
     private readonly deviceSerial: number,
     private readonly synckDelayMs: number,
-  ) {}
+  ) {
+    this.memoryFilePath = join(
+      process.cwd(),
+      "data",
+      `esp32-flash-${deviceSerial}.json`,
+    );
+    this.loadMemory();
+  }
 
   handle(pcg: ParsedPcg): void {
     if (pcg.receiverPort === PcgPort.DIP) {
@@ -51,6 +61,7 @@ export class Esp32Simulator {
     }
 
     if (pcg.receiverPort === PcgPort.FWU) {
+      console.log("[ESP32-SIM] PcgPort.FWU ");
       this.handleFwu(pcg);
       return;
     }
@@ -78,6 +89,7 @@ export class Esp32Simulator {
         address: fwu.address,
       });
       this.reply(request, ack);
+      this.saveMemory();
       return;
     }
 
@@ -93,10 +105,52 @@ export class Esp32Simulator {
         data,
       });
       this.reply(request, replyPayload);
+      this.saveMemory();
       return;
     }
 
     console.log("[ESP32-SIM] FWU mode ignored:", fwu.mode);
+    this.saveMemory();
+  }
+
+  private loadMemory(): void {
+    try {
+      if (!existsSync(this.memoryFilePath)) {
+        console.log(`[ESP32-SIM] no flash file yet: ${this.memoryFilePath}`);
+        return;
+      }
+      const raw = readFileSync(this.memoryFilePath, "utf8");
+      const obj = JSON.parse(raw) as Record<string, string>;
+      let loaded = 0;
+      for (const [key, hex] of Object.entries(obj)) {
+        const buf = Buffer.from(hex, "hex");
+        if (buf.length !== FwuSize.DATA) continue;
+        this.memory.set(key, new Uint8Array(buf));
+        loaded += 1;
+      }
+      console.log(
+        `[ESP32-SIM] loaded ${loaded} blocks from ${this.memoryFilePath}`,
+      );
+    } catch (err) {
+      console.log("[ESP32-SIM] memory load failed:", err);
+    }
+  }
+
+  private saveMemory(): void {
+    try {
+      const dir = dirname(this.memoryFilePath);
+      if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+      const obj: Record<string, string> = {};
+      for (const [key, data] of this.memory) {
+        obj[key] = Buffer.from(data).toString("hex");
+      }
+      writeFileSync(this.memoryFilePath, JSON.stringify(obj));
+      console.log(
+        `[ESP32-SIM] saved ${this.memory.size} blocks to ${this.memoryFilePath}`,
+      );
+    } catch (err) {
+      console.log("[ESP32-SIM] memory save failed:", err);
+    }
   }
 
   /** Swap sender/receiver and send back on the same transport the request used. */

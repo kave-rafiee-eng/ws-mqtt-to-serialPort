@@ -38,6 +38,7 @@ Desktop.ini
 *~
 
 # Runtime / temp
+data/
 tmp/
 temp/
 *.pid
