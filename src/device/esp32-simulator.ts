@@ -79,10 +79,16 @@ export class Esp32Simulator {
     const { fwu } = parsed;
     const key = addressKey(fwu.address);
 
+    const addNumber =
+      fwu.address[0] |
+      (fwu.address[1] << 8) |
+      (fwu.address[2] << 16) |
+      (fwu.address[3] << 24);
+
     if (fwu.mode === FwuMode.WRITE) {
       this.memory.set(key, new Uint8Array(fwu.data));
       console.log(
-        `[ESP32-SIM] FWU WRITE pid=${request.pid} addr=${key} bytes=${fwu.data.length}`,
+        `[ESP32-SIM] FWU WRITE pid=${request.pid} addNumber=${addNumber} addr=${key} bytes=${fwu.data.length}`,
       );
       const ack = this.fwu.build({
         mode: FwuMode.ACK,
@@ -97,7 +103,7 @@ export class Esp32Simulator {
       const stored = this.memory.get(key);
       const data = stored ?? new Uint8Array(FwuSize.DATA);
       console.log(
-        `[ESP32-SIM] FWU READ pid=${request.pid} addr=${key} hit=${stored !== undefined}`,
+        `[ESP32-SIM] FWU READ pid=${request.pid} addNumber=${addNumber} addr=${key} hit=${stored !== undefined}`,
       );
       const replyPayload = this.fwu.build({
         mode: FwuMode.WRITE,

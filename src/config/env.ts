@@ -28,7 +28,7 @@ export function loadConfig(): AppConfig {
   return {
     serial: {
       productId: process.env.SERIAL_PRODUCT_ID ?? "7523",
-      baudRate: envInt("SERIAL_BAUD", 38400),
+      baudRate: envInt("SERIAL_BAUD", 115200),
       flushDelayMs: envInt("SERIAL_FLUSH_MS", 40),
       pollIntervalMs: envInt("SERIAL_POLL_MS", 2000),
     },
